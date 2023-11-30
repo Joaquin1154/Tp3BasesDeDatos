@@ -1,0 +1,108 @@
+Create database Proyectos;
+use Proyectos;
+
+create table Cientificos(Cod_Cien int, Ape varchar(50), Nom varchar(50));
+create table Proyecto(Cod_Proyecto int, Nom_Proyecto varchar(50));
+create table Proyecto_Cientifico(Cod_Proy int, Cod_Cientifico int, Horas int);
+
+insert into Cientificos values(23, 'Echeverría', 'Juan Carlos');
+insert into Cientificos values(12, 'Sanchez', 'Oscar');
+insert into Cientificos values(24, 'Vicuña', 'María');
+insert into Cientificos values(59, 'Rosales', 'Pedro');
+
+insert into Proyecto values(392, 'Sistema Integral de Ticket (GIT)'); 
+insert into Proyecto values(817, 'Sistema Gestion Comercial (SIGECO)');
+
+insert into Proyecto_Cientifico values(392, 24, 32);
+insert into Proyecto_Cientifico values(817, 24, 14);
+insert into Proyecto_Cientifico values(817, 59, 21);
+insert into Proyecto_Cientifico values(392, 23, 28);
+insert into Proyecto_Cientifico values(392, 59, 39);
+
+-- 1)
+-- select Cod_Cien as Codigo, Ape as Apellido, Nom as Nombre, (select Cod_Proy as Proyecto_trabaja from Proyecto_Cientifico where( select Cod_Cientifico from Proyecto_Cientifico) = Cod_Cien) from Cientificos;
+SELECT *
+FROM Cientificos
+ LEFT OUTER JOIN Proyecto_Cientifico
+ ON Cod_Cien = Cod_Cientifico
+ LEFT OUTER JOIN Proyecto
+ ON Cod_Proyecto = Cod_Proy;
+ 
+ select Cientificos.Nom, Proyecto.Nom_Proyecto
+ from Cientificos inner join Proyecto_Cientifico on Cientificos.Cod_Cien = Proyecto_Cientifico.Cod_Cientifico
+					inner join Proyecto on Proyecto_Cientifico.Cod_Proy = Proyecto.Cod_Proyecto;
+
+-- 2)
+
+select Proyecto.Cod_Proyecto, Proyecto.Nom_Proyecto, Cientificos.Cod_Cien
+from Proyecto inner join Proyecto_Cientifico on Proyecto.Cod_Proyecto = Proyecto_Cientifico.Cod_Proy
+			inner join Cientificos on Cientificos.Cod_Cien = Proyecto_Cientifico.Cod_Cientifico
+where Cientificos.Cod_Cien = 24;
+
+-- 3)
+
+select Cientificos.Nom, Cientificos.Ape, Proyecto.Cod_Proyecto
+from Cientificos inner join Proyecto_Cientifico on Cientificos.Cod_Cien = Proyecto_Cientifico.Cod_Cientifico
+				inner join Proyecto on Proyecto.Cod_Proyecto = Proyecto_Cientifico.Cod_Proy
+where Proyecto.Cod_Proyecto = 817;
+
+-- 4)
+
+select Cientificos.Cod_Cien, Cientificos.Nom, Cientificos.Ape, count(Proyecto_Cientifico.Cod_Proy) as 'Proyectos'
+from Cientificos inner join Proyecto_Cientifico on Cientificos.Cod_Cien = Proyecto_Cientifico.Cod_Cientifico
+group by Cientificos.Cod_Cien, Cientificos.Nom, Cientificos.Ape;
+
+-- 5)
+
+select Cientificos.Nom, Cientificos.Ape, Proyecto_Cientifico.Horas, Proyecto_Cientifico.Cod_Proy as 'Proyecto'
+from Cientificos inner join Proyecto_Cientifico on Cientificos.Cod_Cien = Proyecto_Cientifico.Cod_Cientifico;
+
+-- 6)
+
+select Cientificos.Cod_Cien, Cientificos.Ape, Cientificos.Nom from cientificos
+inner join Proyecto_Cientifico on Cientificos.Cod_Cien = Proyecto_Cientifico.Cod_Cientifico
+group by Cientificos.Cod_Cien, Cientificos.Ape, Cientificos.Nom
+having count(Proyecto_Cientifico.Cod_Cientifico) >= 2;
+
+-- 7 )
+
+select Cod_Proyecto, Nom_Proyecto
+from Proyecto
+inner join Proyecto_Cientifico on Proyecto_Cientifico.Cod_Proy = Proyecto.Cod_Proyecto
+inner join Cientificos on Proyecto_Cientifico.Cod_Cientifico = Cientificos.Cod_Cien
+group by Proyecto.Cod_Proyecto, Proyecto.Nom_Proyecto
+having count(Proyecto.Cod_Proyecto) = 1;
+
+-- 8)
+
+select Proyecto.Nom_Proyecto
+from Proyecto
+inner join Proyecto_Cientifico on Proyecto_Cientifico.Cod_Proy = Proyecto.Cod_Proyecto
+inner join Cientificos on Cientificos.Cod_Cien = Proyecto_Cientifico.Cod_Cientifico
+where Cientificos.Ape like "E%"
+group by Proyecto.Nom_Proyecto;
+
+-- 9)
+
+select Proyecto.Nom_Proyecto, count(Proyecto_Cientifico.Cod_Cientifico) as "Cantidad"
+from Proyecto 
+inner join Proyecto_Cientifico on Proyecto_Cientifico.Cod_Proy = Proyecto.Cod_Proyecto
+group by Proyecto.Nom_Proyecto
+order by Cantidad desc limit 1;
+
+-- 10)
+
+select Proyecto.Nom_Proyecto, count(Proyecto_Cientifico.Cod_Cientifico) as "Cantidad"
+from Proyecto 
+inner join Proyecto_Cientifico on Proyecto_Cientifico.Cod_Proy = Proyecto.Cod_Proyecto
+group by Proyecto.Nom_Proyecto
+order by Cantidad limit 1;
+
+-- 11)
+
+select Cientificos.Cod_Cien
+from Cientificos
+inner join Proyecto_Cientifico on Proyecto_Cientifico.Cod_Cientifico = Cientificos.Cod_Cien
+group by Cientificos.Cod_Cien
+having count(Proyecto_Cientifico.Cod_Cientifico) > 1 
+and avg(Proyecto_Cientifico.Horas) > 20;
